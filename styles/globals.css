@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --primary: theme(colors.accent1);
+  --secondary: theme(colors.stone.900);
+}
+
+.custom-border {
+  background: linear-gradient(0deg, var(--secondary) 55%, var(--primary) 100%);
+  border-radius: 30px;
+  padding: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
