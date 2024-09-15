@@ -1,6 +1,6 @@
 import { motion, MotionConfig } from "framer-motion";
 
-export default function MenuButton({ active, setActive }) {
+export default function MobileMenuButton({ active, setActive }) {
   return (
     <MotionConfig
       transition={{

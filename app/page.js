@@ -1,22 +1,52 @@
-import Image from "next/image";
 import Hero from "./_components/Hero";
 import FeaturesSection from "./_components/FeaturesSection";
 import PricingSection from "./_components/PricingSection";
-import AboutUsSection from "./_components/AboutUsSection";
-import ContactSection from "./_components/ContactSection";
+import HeroImages from "./_components/ui/HeroImages";
+import DevicesLogoCarousel from "./_components/ui/DevicesLogoCarousel";
+import HowAppWorks from "./_components/ui/HowAppWorks";
+import WhyChooseUs from "./_components/WhyChooseUs";
+import FaqSection from "./_components/FaqSection";
+import RatingSection from "./_components/RatingSection";
+import CtaSection from "./_components/CtaSection";
+
+export const metadata = {
+  title: "Fitrone",
+  description: "Expert Coaching. Personalized Progress. Secure.",
+};
 
 export default function Page() {
   return (
     <>
-      <div className="flex flex-col justify-center items-center">
+      <div id="home-page" className="flex flex-col justify-center items-center">
+        {/*  */}
         <Hero />
-        <div className="px-6 mt-10">
-          <Image src="/hero.jpg" className=" custom-border" width={1200} height={800} alt="hero" />
-        </div>
+
+        {/*  */}
+        <HeroImages />
+
+        {/*  */}
+        <DevicesLogoCarousel />
+
+        {/*  */}
+        <WhyChooseUs />
+
+        {/*  */}
         <FeaturesSection />
+
+        {/*  */}
+        <RatingSection />
+
+        {/*  */}
+        <HowAppWorks />
+
+        {/*  */}
         <PricingSection />
-        <AboutUsSection />
-        <ContactSection />
+
+        {/*  */}
+        <FaqSection />
+
+        {/*  */}
+        <CtaSection />
       </div>
     </>
   );

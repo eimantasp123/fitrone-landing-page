@@ -1,20 +1,20 @@
-import LinkDefault from "./LinkDefault";
+import LinkDefault from "./ui/LinkDefault";
 
 const links = [
   { href: "/terms", label: "Terms of services" },
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/help", label: "Help Center" },
+  { href: "/privacy-policy", label: "Privacy policy" },
+  { href: "/help-center", label: "Help Center" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="border-t-[1px] mt-10 flex items-center h-auto py-5 transition-all duration-300 ease-in bg-neutral-900 border-stone-800">
+    <footer className="border-t-[1px] mt-10 flex items-center h-auto py-5 transition-all duration-300 ease-in  border-stone-800">
       <div className="container mx-auto max-w-[1500px] flex flex-col md:flex-row gap-6 items-center  justify-between px-6 my-5">
         {/* Left Side Container */}
         <ul className=" flex flex-wrap justify-center gap-6 ">
           {links.map(({ href, label }) => (
             <li key={`${href}${label}`}>
-              <LinkDefault href={href} text={label} />
+              <LinkDefault route={href} text={label} />
             </li>
           ))}
         </ul>

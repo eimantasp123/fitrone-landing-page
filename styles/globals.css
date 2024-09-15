@@ -7,7 +7,7 @@ html {
 }
 
 :root {
-  --primary: theme(colors.accent1);
+  --primary: theme(colors.accent);
   --secondary: theme(colors.stone.900);
 }
 

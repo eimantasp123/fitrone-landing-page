@@ -1,18 +1,18 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
-import Navigation from "./Navigation";
-import MenuButton from "./MenuButton";
-import MobileNavigation from "./MobileNavigation";
-import OutlineButton from "./OutlineButton";
-import LinkDefault from "./LinkDefault";
 import { useRouter } from "next/navigation";
+import Navigation from "./Navigation";
+import MobileMenuButton from "./ui/MobileMenuButton";
+import MobileNavigation from "./MobileNavigation";
+import Logo from "./ui/Logo";
+import HeaderAuth from "./HeaderAuth";
 
+// Header component
 export default function Header() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(null); // Active section state
-  const [isManualScroll, setIsManualScroll] = useState(true); // Track manual scroll
+  const [isAutomaticalScroll, setIsAutomaticalScroll] = useState(false); // Automatical scroll state
   const sections = useRef([]); // Store section references
   const scrollTimeoutRef = useRef(null); // Store scroll timeout reference
   const headerHeight = 180; // Header height
@@ -20,68 +20,57 @@ export default function Header() {
   // Handle scroll to section with smooth behavior
   const scrollToSection = useCallback(
     (sectionId) => {
-      clearTimeout(scrollTimeoutRef.current); // Clear timeout if exists to prevent multiple scroll events
-      setActiveSection(sectionId); // Set active section
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      setActiveSection(sectionId);
+      setIsAutomaticalScroll(true);
 
       const section = document.getElementById(sectionId);
       if (!section) return;
-      const sectionOffsetTop = sectionId === "home" ? 0 : section?.offsetTop - headerHeight + 60; // Calculate the offset top of the section
+      const sectionOffsetTop = sectionId === "home" ? 0 : section?.offsetTop - headerHeight + 60;
 
       window.scrollTo({
         top: sectionOffsetTop,
         behavior: "smooth",
       });
+
+      // Set timeout to disable automatical scroll
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsAutomaticalScroll(false);
+      }, 600);
     },
     [headerHeight]
   );
 
-  // Handle the scroll event to update active section
-  const handleActiveSection = useCallback(() => {
-    if (!isManualScroll || window.location.pathname !== "/") return; // Do nothing if manual scroll is active or not on the home page
-
-    const pageYOffset = window.pageYOffset + headerHeight;
-    let newActiveSection = null;
-
-    sections.current.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.clientHeight;
-
-      // Check if the current section is within the section bounds
-      if (pageYOffset >= sectionTop && pageYOffset <= sectionTop + sectionHeight) {
-        newActiveSection = section.id;
-      }
-    });
-
-    if (newActiveSection && newActiveSection !== activeSection) {
-      setActiveSection(newActiveSection);
-    }
-  }, [activeSection, isManualScroll]);
-
-  // Handle click event on navigation links and prevent from re-creating the function on each render
+  // Handle click event on navigation links
   const handleClick = useCallback(
     (href) => {
       if (href.startsWith("#")) {
-        const sectionId = href.slice(1);
-
-        // If the current route is the home page, scroll to the section
+        const sectionId = href.substring(1);
         if (window.location.pathname === "/") {
           scrollToSection(sectionId);
         } else {
-          // If the current route is not the home page, navigate to the home page and scroll to the section
-
-          setPendingSection(sectionId); // Store the pending section to scroll to after navigation
           router.push("/");
+          // Use MutationObserver to know when the layout main content is loaded
+          const observer = new MutationObserver(() => {
+            const mainContent = document.querySelector("#home-page");
+            if (mainContent) {
+              observer.disconnect(); // Stop observing once content is loaded
+              scrollToSection(sectionId); // Scroll to section after content is loaded
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
         }
       } else {
-        // For normal route navigation
-        setActiveSection(null); // Clear active section before navigating
         router.push(href);
+        setActiveSection(null);
       }
     },
     [scrollToSection, router]
   );
 
-  // Handle click event on mobile navigation links and prevent from re-creating the function on each render
+  // Handle click event on mobile navigation links
   const handleMobileClick = useCallback(
     (href) => {
       setIsOpen(false);
@@ -90,46 +79,48 @@ export default function Header() {
     [handleClick]
   );
 
-  // Initialize the sections and add scroll event listener
+  // Use IntersectionObserver to detect active section
   useEffect(() => {
-    if (window.location.pathname === "/") {
-      sections.current = document.querySelectorAll("section"); // Get all sections on the page
-      handleActiveSection(); // Call handleActiveSection to set the initial active section
+    const observerOptions = {
+      rootMargin: `-${headerHeight}px 0px 0px 0px`, // Account for the sticky header
+      threshold: 0.5, // Trigger when 50% of the section is visible
+    };
+
+    const handleIntersection = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id); // Set the active section when it enters view
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+    if (!isAutomaticalScroll) {
+      sections.current = document.querySelectorAll("section");
+      sections.current.forEach((section) => observer.observe(section));
     }
 
-    window.addEventListener("scroll", handleActiveSection); // Add scroll event listener
-
-    // Remove scroll event listener on component unmount
     return () => {
-      window.removeEventListener("scroll", handleActiveSection);
+      sections.current.forEach((section) => observer.unobserve(section));
     };
-  }, [handleActiveSection]);
+  }, [headerHeight, isAutomaticalScroll]);
 
   return (
-    <header className="border-b-[1px] flex item-center h-24 lg:h-28 transition-all duration-300 ease-in  z-20  sticky top-0  bg-neutral-900 bg-opacity-60 backdrop-blur-2xl border-stone-800">
-      <div className="container mx-auto max-w-[1500px] flex items-center justify-between py-4 px-6 transition-all duration-200 ease-in ">
+    <header className="border-b-[1px] flex item-center h-24 lg:h-28 transition-all duration-300 ease-in  z-20  sticky top-0  bg-backgroundBlack bg-opacity-60 backdrop-blur-2xl border-stone-800">
+      <div className="relative container mx-auto max-w-[1500px]  flex items-center justify-between py-4 px-6 transition-all duration-200 ease-in ">
         {/* Logo Section */}
-        <div className="flex-none w-[250px]  flex items-center justify-start">
-          <Image src="/logo-white-2.png" className="cursor-pointer" width={110} height={24} alt="logo" />
-        </div>
+        <Logo />
 
         {/* Main Menu Section */}
-        <nav className="shrink whitespace-nowrap w-[50%] 3xl:w-[55%] transition-all duration-200 ease-in hidden lg:flex justify-center items-stretch space-x-6">
-          <Navigation handleClick={handleClick} activeSection={activeSection} />
-        </nav>
+        <Navigation handleClick={handleClick} activeSection={activeSection} />
 
-        {/* Right Side Buttons Section */}
-        <div className="flex-none w-[250px]  hidden lg:flex  justify-end items-center space-x-6">
-          <LinkDefault href="http://localhost:3000/login" />
-          <OutlineButton
-            text="Sign Up"
-            route="http://localhost:3000/login"
-            padding="px-6 md:px-8 lg:px-10"
-            extraClasses="h-[42px]"
-          />
-        </div>
+        {/* Right Side Buttons Section for lg screen */}
+        <HeaderAuth />
+
+        {/* Mobile Menu Button */}
+
         <div className="lg:hidden">
-          <MenuButton active={isOpen} setActive={setIsOpen} />
+          <MobileMenuButton active={isOpen} setActive={setIsOpen} />
         </div>
       </div>
 
